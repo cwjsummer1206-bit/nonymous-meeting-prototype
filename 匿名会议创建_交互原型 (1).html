@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>招标管理 - 创建匿名会议原型</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;color:#333;background:#fff;font-size:13px}
+.page{min-height:100vh;background:#fff}
+.topbar{height:34px;border-bottom:1px solid #ddd;padding:0 12px;display:flex;align-items:center;color:#666;font-size:12px}
+.topbar .home{color:#1b8fd1;margin-right:8px}
+.topbar .sep{margin:0 7px;color:#bbb}
+.content{padding:0 8px 40px}
+.bid-title{height:30px;border:1px solid #ddd;border-top:0;padding:7px 10px;color:#1388c5;font-weight:600;background:#fafafa}
+.info-grid{border:1px solid #ddd;border-top:0;display:grid;grid-template-columns: 33% 25% 17% 25%;font-size:12px}
+.info-cell{min-height:26px;border-right:1px solid #ddd;border-bottom:1px solid #ddd;padding:6px 8px}
+.info-cell:nth-child(4n){border-right:0}
+.info-cell:nth-last-child(-n+4){border-bottom:0}
+.label{color:#555}.value{margin-left:18px;color:#444}
+.toolbar{height:90px;display:flex;align-items:flex-start;padding:38px 12px 0;gap:8px}
+.btn{border:0;border-radius:1px;padding:7px 13px;color:#fff;cursor:pointer;font-size:12px;transition:.15s}
+.btn:hover{filter:brightness(.95)}
+.btn-blue{background:#1c9ad6}.btn-green{background:#9bcca2}.btn-green.active{background:#75b87f}.btn-red{background:#f20f12}
+.filters{display:flex;align-items:center;gap:6px;padding:0 10px 14px}
+select,input,textarea{font-family:inherit}
+.filters select{width:140px;height:24px;border:1px solid #ccc;color:#555;padding:2px 5px}
+.filters input{width:145px;height:24px;border:1px solid #ccc}
+.search{background:#1c9ad6;color:#fff;border:0;height:24px;padding:0 12px;cursor:pointer}
+.table-wrap{padding:0 0}
+table{border-collapse:collapse;width:100%;font-size:12px}
+th,td{border:1px solid #ddd;height:29px;text-align:center;padding:4px 5px;white-space:nowrap}
+th{background:#f6f6f6;color:#555;font-weight:600}
+td{color:#444}
+.link{color:#168dca;cursor:pointer}
+.check{width:30px}
+.bottom-actions{display:flex;justify-content:center;gap:4px;padding-top:42px}
+.pager{float:right;margin-top:14px;border:1px solid #ddd}
+.pager span{display:inline-block;padding:5px 9px;border-left:1px solid #ddd;color:#777}
+.pager span:first-child{border-left:0}
+.pager .current{background:#3aa6d8;color:#fff}
+.count{margin-top:14px;color:#666}
+
+.toast{position:fixed;right:28px;top:24px;background:#333;color:#fff;padding:11px 18px;border-radius:3px;box-shadow:0 3px 12px #0002;display:none;z-index:99}
+.toast.show{display:block;animation:fade 2.8s forwards}
+@keyframes fade{0%,75%{opacity:1}100%{opacity:0}}
+
+.create-page{display:none;min-height:100vh;background:#f7f8fa}
+.create-page.show{display:block}
+.list-page.hide{display:none}
+.create-head{height:48px;background:#fff;border-bottom:1px solid #ddd;display:flex;align-items:center;padding:0 18px}
+.back{color:#168dca;cursor:pointer;margin-right:18px}
+.create-head-title{font-size:15px;font-weight:600;color:#333}
+.create-main{width:980px;margin:20px auto}
+.card{background:#fff;border:1px solid #ddd;border-radius:2px}
+.card-title{height:45px;border-bottom:1px solid #eee;padding:14px 20px;font-size:14px;font-weight:600}
+.form{padding:22px 30px 8px}
+.form-row{display:flex;margin-bottom:20px;align-items:flex-start}
+.form-label{width:110px;text-align:right;padding:7px 18px 0 0;color:#444;position:relative}
+.required:before{content:"*";color:#e53935;margin-right:4px}
+.form-control{flex:1;max-width:700px}
+.text-input,.datetime{height:36px;width:100%;border:1px solid #ccc;border-radius:2px;padding:7px 10px;outline:none}
+.text-input:focus,.datetime:focus,.email-input:focus,textarea:focus{border-color:#49a9d8;box-shadow:0 0 0 2px #49a9d81a}
+.hint{font-size:12px;color:#999;margin-top:6px}
+.people-box{border:1px solid #ccc;border-radius:2px;padding:8px;min-height:105px;background:#fff}
+.email-tags{display:flex;flex-wrap:wrap;gap:7px;max-height:220px;overflow:auto;padding-bottom:5px}
+.tag{display:inline-flex;align-items:center;background:#eef7fc;border:1px solid #c9e7f5;color:#317da0;border-radius:2px;padding:5px 7px}
+.tag .x{margin-left:7px;color:#999;cursor:pointer;font-weight:bold}
+.add-email{display:flex;margin-top:7px;border-top:1px dashed #ddd;padding-top:9px;gap:8px}
+.email-input{height:32px;flex:1;border:1px solid #ccc;padding:6px 9px}
+.add-btn{height:32px;border:1px solid #1c9ad6;background:#fff;color:#168dca;padding:0 13px;cursor:pointer}
+textarea{width:100%;height:150px;border:1px solid #ccc;padding:9px;resize:vertical;outline:none}
+.char-count{text-align:right;color:#999;font-size:12px;margin-top:4px}
+.footer{padding:18px 30px 25px;border-top:1px solid #eee;text-align:center}
+.primary{background:#168dca;color:#fff;border:0;border-radius:2px;padding:9px 28px;cursor:pointer;margin-right:10px}
+.secondary{background:#fff;color:#555;border:1px solid #ccc;border-radius:2px;padding:8px 27px;cursor:pointer}
+.error{border-color:#e53935!important}
+.error-msg{color:#e53935;font-size:12px;margin-top:5px;display:none}
+.error-msg.show{display:block}
+.auto-note{background:#f5fbfe;border:1px solid #d8edf7;color:#4c7890;padding:8px 10px;margin-bottom:14px;font-size:12px}
+.summary{margin-top:18px;background:#fff;border:1px solid #ddd;padding:15px 20px;display:none}
+.summary.show{display:block}
+</style>
+</head>
+<body>
+
+<div id="listPage" class="page list-page">
+  <div class="topbar"><span class="home">首页</span><span class="sep">›</span><span>招标管理</span><span class="sep">›</span><span>投标管理</span></div>
+  <div class="content">
+    <div class="bid-title">【承运商不可报名】自动落运价测试-双模式审批</div>
+    <div class="info-grid">
+      <div class="info-cell"><span class="label">区域：</span><span class="value">全国</span></div>
+      <div class="info-cell"><span class="label">招标编号：</span><span class="value">QG202609015182</span></div>
+      <div class="info-cell"><span class="label">招标类型：</span><span class="value">定向询价</span></div>
+      <div class="info-cell"><span class="label">发布日期：</span><span class="value">2026-09-01 14:42</span></div>
+      <div class="info-cell"><span class="label">首轮定向询价截止时间：</span><span class="value">2026-09-01 14:47</span></div>
+      <div class="info-cell"></div><div class="info-cell"></div><div class="info-cell"></div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn btn-blue">◉ 多次议价管理</button>
+      <button class="btn btn-blue" id="createBtn">创建匿名会议</button>
+    </div>
+
+    <div class="filters">
+      <span>标的状态：</span>
+      <select><option>全部</option><option>待签署合同</option><option>中标</option></select>
+      <span>已选标的数量：</span><input value="" readonly style="background:#fafafa">
+      <span style="margin-left:8px">标的选择：</span><input>
+      <button class="search">🔍 查询</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th class="check">□</th><th>操作</th><th>标的号</th><th>业务类型</th><th>线路类型</th><th>标的状态</th><th>招标结果</th>
+          <th>报名承运商数</th><th>报价承运商数</th><th>发布中标人</th><th>中标承运商</th>
+          <th>主选承运商中标通知查阅时间</th><th>副选承运商中标通知查阅时间</th><th>备选承运商中标通知查阅时间</th><th>议价截止时间</th>
+        </tr></thead>
+        <tbody><tr>
+          <td>□</td><td><span class="btn btn-blue" style="padding:4px 8px">◉ 评标结果审批组</span> <span class="link">◉ 标的详情</span></td>
+          <td>1</td><td></td><td></td><td>待签署合同</td><td>中标</td><td class="link">1</td><td>1</td><td>heija201</td><td class="link">查看</td>
+          <td>2026-09-01 17:25:20</td><td></td><td></td><td>2026-09-01 14:47:45</td>
+        </tr></tbody>
+      </table>
+    </div>
+    <div class="count">共1页，1条数据</div>
+    <div class="pager"><span>|‹</span><span>‹</span><span class="current">1</span><span>›</span><span>›|</span></div>
+    <div class="bottom-actions">
+      <button class="btn btn-green">◉ 发布公告</button>
+      <button class="btn btn-green">◉ 提交审批</button>
+      <button class="btn btn-green">▣ 发布中标</button>
+      <button class="btn btn-green">◉ 查看结果详情</button>
+    </div>
+  </div>
+</div>
+
+<div id="createPage" class="create-page">
+  <div class="create-head">
+    <span class="back" id="backBtn">‹ 返回投标管理</span>
+    <span class="create-head-title">创建匿名会议</span>
+  </div>
+  <div class="create-main">
+    <div class="card">
+      <div class="card-title">会议基本信息</div>
+      <div class="form">
+        <div class="auto-note">系统已根据当前标书自动带入已报名承运商邮箱，可删除或继续添加其他参会人员。</div>
+
+        <div class="form-row">
+          <div class="form-label required">会议主题</div>
+          <div class="form-control">
+            <input id="subject" class="text-input" placeholder="请输入会议主题，建议填写业务/标书名称">
+            <div id="subjectErr" class="error-msg">请输入会议主题</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-label required">会议时间</div>
+          <div class="form-control">
+            <input id="meetingTime" type="datetime-local" class="datetime">
+            <div id="timeErr" class="error-msg">请选择会议时间</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-label required">添加人员</div>
+          <div class="form-control">
+            <div class="people-box">
+              <div id="emailTags" class="email-tags"></div>
+              <div class="add-email">
+                <input id="emailInput" class="email-input" placeholder="请输入邮箱，回车或点击“添加”">
+                <button id="addEmail" class="add-btn">+ 添加</button>
+              </div>
+            </div>
+            <div id="peopleErr" class="error-msg">请至少添加1个有效邮箱</div>
+            <div class="hint">已自动带入 <b id="autoCount">0</b> 个已报名承运商邮箱；最多1000个邮箱。</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-label">添加说明</div>
+          <div class="form-control">
+            <textarea id="description" maxlength="1000" placeholder="请输入会议说明，最多1000字"></textarea>
+            <div class="char-count"><span id="descCount">0</span>/1000</div>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <button id="submitBtn" class="primary">提交创建</button>
+        <button id="cancelBtn" class="secondary">取消</button>
+      </div>
+    </div>
+    <div id="summary" class="summary"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast">会议创建成功</div>
+
+<script>
+const autoEmails = [
+  "carrier-a@example.com","carrier-b@example.com","carrier-c@example.com",
+  "carrier-d@example.com","carrier-e@example.com"
+];
+let emails = [...autoEmails];
+
+const listPage=document.getElementById('listPage');
+const createPage=document.getElementById('createPage');
+const tags=document.getElementById('emailTags');
+
+function renderEmails(){
+  tags.innerHTML='';
+  emails.forEach((email,i)=>{
+    const tag=document.createElement('span');
+    tag.className='tag';
+    tag.innerHTML=`${email}<span class="x" data-i="${i}">×</span>`;
+    tags.appendChild(tag);
+  });
+  document.getElementById('autoCount').textContent=Math.min(autoEmails.length, emails.length);
+  tags.querySelectorAll('.x').forEach(x=>x.onclick=()=>{emails.splice(Number(x.dataset.i),1);renderEmails();});
+}
+function showCreate(){
+  listPage.classList.add('hide');
+  createPage.classList.add('show');
+  renderEmails();
+  document.getElementById('subject').focus();
+}
+function back(){
+  createPage.classList.remove('show');
+  listPage.classList.remove('hide');
+}
+document.getElementById('createBtn').onclick=showCreate;
+document.getElementById('backBtn').onclick=back;
+document.getElementById('cancelBtn').onclick=back;
+
+function validEmail(e){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)}
+function addEmail(){
+  const input=document.getElementById('emailInput');
+  const value=input.value.trim();
+  if(!value)return;
+  const candidates=value.split(/[,，;\s]+/).filter(Boolean);
+  let added=0, invalid=0;
+  candidates.forEach(e=>{
+    if(validEmail(e) && !emails.includes(e) && emails.length<1000){emails.push(e);added++}
+    else if(!validEmail(e)) invalid++;
+  });
+  input.value='';
+  renderEmails();
+  if(invalid) alert('存在格式不正确的邮箱，请检查后重新添加。');
+  if(emails.length>=1000) alert('参会人员最多支持1000个邮箱。');
+}
+document.getElementById('addEmail').onclick=addEmail;
+document.getElementById('emailInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addEmail();}});
+
+document.getElementById('description').addEventListener('input',e=>{
+  document.getElementById('descCount').textContent=e.target.value.length;
+});
+
+function clearErrors(){
+  ['subject','meetingTime'].forEach(id=>document.getElementById(id).classList.remove('error'));
+  ['subjectErr','timeErr','peopleErr'].forEach(id=>document.getElementById(id).classList.remove('show'));
+}
+document.getElementById('submitBtn').onclick=()=>{
+  clearErrors();
+  const subject=document.getElementById('subject').value.trim();
+  const time=document.getElementById('meetingTime').value;
+  let ok=true;
+  if(!subject){document.getElementById('subject').classList.add('error');document.getElementById('subjectErr').classList.add('show');ok=false}
+  if(!time){document.getElementById('meetingTime').classList.add('error');document.getElementById('timeErr').classList.add('show');ok=false}
+  if(!emails.length){document.getElementById('peopleErr').classList.add('show');ok=false}
+  if(!ok)return;
+  const dt=new Date(time);
+  const formatted=dt.toLocaleString('zh-CN',{hour12:false});
+  const desc=document.getElementById('description').value.trim();
+  document.getElementById('summary').innerHTML=
+    `<b>✓ 匿名会议创建成功</b><br><br>
+     <span>会议主题：</span>${escapeHtml(subject)}<br>
+     <span>会议时间：</span>${formatted}<br>
+     <span>参会人员：</span>${emails.length} 人<br>
+     ${desc?`<span>会议说明：</span>${escapeHtml(desc)}`:''}`;
+  document.getElementById('summary').classList.add('show');
+  const toast=document.getElementById('toast');
+  toast.classList.remove('show'); void toast.offsetWidth; toast.classList.add('show');
+};
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+</script>
+</body>
+</html>
