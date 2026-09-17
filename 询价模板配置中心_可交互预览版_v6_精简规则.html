@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>询价模板配置中心 · 可交互预览版</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f5f7fa;color:#1f2937}
+button,input,select{font:inherit}button{cursor:pointer}
+.top{height:64px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;padding:0 22px;gap:18px}
+.logo{font-size:18px;font-weight:700}.crumb{color:#94a3b8}.title{font-weight:600}.spacer{flex:1}
+.btn{border:1px solid #d1d5db;background:#fff;border-radius:7px;padding:8px 14px}.primary{background:#1677ff;border-color:#1677ff;color:#fff}.danger{color:#dc2626}
+.layout{height:calc(100vh - 64px);display:grid;grid-template-columns:220px 1fr 380px;gap:12px;padding:12px}
+.panel{background:#fff;border:1px solid #e5e7eb;border-radius:9px;overflow:hidden}
+.panel-head{height:50px;border-bottom:1px solid #eef0f3;padding:0 15px;display:flex;align-items:center;justify-content:space-between;font-weight:600}
+.left{padding-bottom:10px}.search{margin:12px;width:calc(100% - 24px);padding:9px 10px;border:1px solid #d9dee7;border-radius:7px}
+.group{padding:9px 14px 6px;color:#94a3b8;font-size:12px}.fieldnav{padding:8px 14px;border-radius:6px;margin:2px 8px;cursor:pointer;display:flex;justify-content:space-between}.fieldnav.active{background:#eaf3ff;color:#1677ff;font-weight:600}.count{color:#9ca3af;font-size:12px}
+.center{display:flex;flex-direction:column}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px 13px;border-bottom:1px solid #f0f1f3;text-align:left;font-size:13px}.table th{background:#fafbfc;color:#64748b;font-weight:500}.row{cursor:pointer}.row:hover{background:#f8fafc}.row.active{background:#f0f7ff}
+.tag{display:inline-block;padding:3px 7px;border-radius:4px;font-size:12px;background:#f1f5f9;color:#475569}.tag.blue{background:#e8f2ff;color:#1677ff}.tag.green{background:#eaf8f0;color:#15803d}.tag.orange{background:#fff5e6;color:#c26a00}
+.center-bottom{margin-top:auto;border-top:1px solid #eee;padding:11px 14px;display:flex;justify-content:space-between;align-items:center}
+.right{overflow:auto}.section{padding:15px;border-bottom:1px solid #eef0f3}.section h3{font-size:14px;margin:0 0 13px}.label{font-size:12px;color:#64748b;margin-bottom:6px}.input,.select{width:100%;padding:9px 10px;border:1px solid #d7dce4;border-radius:6px;background:#fff}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.switch{display:flex;align-items:center;gap:8px;font-size:13px}.rule{border:1px solid #e6eaf0;border-radius:8px;padding:11px;margin-bottom:9px;background:#fbfcfe}.rule-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px;font-weight:600}.ruleline{display:grid;grid-template-columns:1fr 1fr;gap:7px}.mini{padding:7px 8px;border:1px solid #dce1e8;border-radius:6px;background:#fff;font-size:12px}.rule-desc{font-size:12px;color:#64748b;margin-top:7px;line-height:1.5}
+.empty{padding:50px 20px;text-align:center;color:#94a3b8}
+.modal-mask{display:none;position:fixed;inset:0;background:rgba(15,23,42,.35);align-items:center;justify-content:center;z-index:10}.modal{width:560px;background:#fff;border-radius:12px;box-shadow:0 20px 60px #0002}.modal-head{padding:17px 20px;border-bottom:1px solid #eee;font-weight:700}.modal-body{padding:20px}.modal-foot{padding:12px 20px;border-top:1px solid #eee;text-align:right;display:flex;justify-content:flex-end;gap:8px}
+.preview{width:760px}.preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.fieldbox label{display:block;font-size:12px;color:#64748b;margin-bottom:6px}.fieldbox input,.fieldbox select{width:100%;padding:9px;border:1px solid #d8dee8;border-radius:6px}.error{color:#dc2626;font-size:12px;margin-top:5px}.success{color:#15803d;font-size:13px}.toast{position:fixed;right:24px;bottom:24px;background:#111827;color:#fff;padding:11px 16px;border-radius:7px;display:none;z-index:20}
+@media(max-width:1000px){.layout{grid-template-columns:190px 1fr}.right{display:none}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="logo">询价模板配置中心</div><div class="crumb">/</div><div class="title">干线运输询价模板</div>
+  <div class="spacer"></div><span id="status" class="tag orange">草稿</span>
+  <button class="btn" onclick="openPreview()">预览询价单</button>
+  <button class="btn" onclick="openTest()">测试校验</button>
+  <button class="btn primary" onclick="publish()">发布版本</button>
+</div>
+
+<div class="layout">
+<aside class="panel left">
+  <div class="panel-head">字段目录 <button class="btn" style="padding:5px 8px" onclick="addField()">＋</button></div>
+  <input class="search" id="search" placeholder="搜索字段…" oninput="render()">
+  <div id="nav"></div>
+</aside>
+
+<main class="panel center">
+  <div class="panel-head"><span>字段配置</span><span style="font-size:12px;color:#94a3b8" id="fieldCount"></span></div>
+  <table class="table">
+    <thead><tr><th>字段名称</th><th>数据类型</th><th>必填</th><th>承运商可见</th><th>校验规则</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div class="center-bottom"><span style="font-size:12px;color:#64748b">字段与规则在同一工作台维护，发布后由统一规则引擎执行。</span><button class="btn" onclick="save()">保存草稿</button></div>
+</main>
+
+<aside class="panel right">
+  <div class="panel-head"><span>字段属性 & 校验规则</span><span id="selName" style="font-size:12px;color:#1677ff"></span></div>
+  <div id="detail"></div>
+</aside>
+</div>
+
+<div class="modal-mask" id="mask"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+let fields=[
+{id:1,name:"询价单号",type:"文本",required:true,visible:true,rules:[["非空","值不能为空"],["长度","1～50个字符"]]},
+{id:2,name:"装货地",type:"文本",required:true,visible:true,rules:[["非空","必须填写装货地"],["格式提示","需为有效地址"]]},
+{id:3,name:"卸货地",type:"文本",required:true,visible:true,rules:[["非空","必须填写卸货地"]]},
+{id:4,name:"运输方式",type:"枚举",required:true,visible:true,rules:[["枚举","整车 / 零担"]]},
+{id:5,name:"车型",type:"枚举",required:false,visible:true,rules:[["条件必填","当运输方式=整车时必填"]]},
+{id:6,name:"装货日期",type:"日期",required:true,visible:true,rules:[["日期范围","不得早于当前日期"]]},
+{id:7,name:"卸货日期",type:"日期",required:false,visible:true,rules:[["跨字段","卸货日期 ≥ 装货日期"]]},
+{id:8,name:"报价",type:"金额",required:true,visible:true,rules:[["大于","必须 > 0"],["上限","不得超过参考价120%"]]}
+];
+let selected=1;
+
+function render(){
+ const q=document.getElementById("search").value.trim();
+ const list=fields.filter(f=>f.name.includes(q));
+ document.getElementById("fieldCount").textContent=fields.length+" 个字段";
+ document.getElementById("nav").innerHTML=
+   '<div class="group">基础信息</div>'+list.slice(0,4).map(f=>nav(f)).join("")+
+   '<div class="group">运输信息</div>'+list.slice(4).map(f=>nav(f)).join("");
+ document.getElementById("rows").innerHTML=list.map(f=>`<tr class="row ${f.id===selected?'active':''}" onclick="selectField(${f.id})">
+ <td><b>${f.name}</b></td><td><span class="tag">${f.type}</span></td>
+ <td>${f.required?'<span class="tag blue">必填</span>':'<span style="color:#94a3b8">选填</span>'}</td>
+ <td>${f.visible?'<span class="tag green">可见</span>':'<span style="color:#94a3b8">隐藏</span>'}</td>
+ <td>${f.rules.length} 条</td></tr>`).join("") || '<tr><td colspan="5"><div class="empty">没有匹配字段</div></td></tr>';
+ renderDetail();
+}
+function nav(f){return `<div class="fieldnav ${f.id===selected?'active':''}" onclick="selectField(${f.id})"><span>${f.name}</span><span class="count">${f.rules.length}</span></div>`}
+function selectField(id){selected=id;render()}
+function renderDetail(){
+ const f=fields.find(x=>x.id===selected); if(!f)return;
+ document.getElementById("selName").textContent=f.name;
+ document.getElementById("detail").innerHTML=`
+ <div class="section"><h3>基本属性</h3>
+  <div class="label">字段名称</div><input class="input" value="${f.name}" onchange="updateField('name',this.value)">
+  <div style="height:10px"></div><div class="grid2">
+   <div><div class="label">数据类型</div><select class="select" onchange="updateField('type',this.value)">${["文本","数字","金额","日期","枚举"].map(x=>`<option ${x===f.type?'selected':''}>${x}</option>`).join("")}</select></div>
+   <div><div class="label">字段标识</div><input class="input" value="field_${f.id}" disabled></div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:22px"><label class="switch"><input type="checkbox" ${f.required?'checked':''} onchange="updateField('required',this.checked)"> 必填</label><label class="switch"><input type="checkbox" ${f.visible?'checked':''} onchange="updateField('visible',this.checked)"> 承运商可见</label></div>
+ </div>
+ <div class="section"><h3>校验规则 <span class="count">（${f.rules.length}）</span></h3>
+   ${f.rules.map((r,i)=>`<div class="rule"><div class="rule-title"><span>${r[0]}</span><button class="btn danger" style="border:0;padding:2px 5px" onclick="removeRule(${i})">删除</button></div>
+   <input class="mini" style="width:100%" value="${r[1]}" onchange="fields.find(x=>x.id===selected).rules[${i}][1]=this.value"></div>`).join("")}
+   <button class="btn" style="width:100%" onclick="addRule()">＋ 添加校验规则</button>
+ </div>
+ <div class="section"><button class="btn danger" onclick="deleteField()">删除字段</button></div>`;
+}
+function updateField(k,v){let f=fields.find(x=>x.id===selected);f[k]=v;render()}
+function addField(){
+ openModal("新增字段",`<div class="label">字段名称</div><input class="input" id="newName" placeholder="例如：联系人"><div style="height:12px"></div><div class="label">数据类型</div><select class="select" id="newType"><option>文本</option><option>数字</option><option>金额</option><option>日期</option><option>枚举</option></select>`,
+ `<button class="btn" onclick="closeModal()">取消</button><button class="btn primary" onclick="confirmAdd()">创建字段</button>`);
+}
+function confirmAdd(){let n=document.getElementById("newName").value.trim();if(!n){alert("请输入字段名称");return}let id=Math.max(...fields.map(f=>f.id))+1;fields.push({id,name:n,type:document.getElementById("newType").value,required:false,visible:true,rules:[]});selected=id;closeModal();render();toast("字段已创建")}
+function addRule(){
+ openModal("添加校验规则",`<div class="label">规则类型</div><select class="select" id="rt"><option>非空</option><option>长度</option><option>数值范围</option><option>枚举</option></select><div style="height:12px"></div><div class="label">规则描述</div><input class="input" id="rd" placeholder="例如：值不能为空">`,
+ `<button class="btn" onclick="closeModal()">取消</button><button class="btn primary" onclick="confirmRule()">添加</button>`);
+}
+function confirmRule(){let t=document.getElementById("rt").value,d=document.getElementById("rd").value||"请填写规则";fields.find(x=>x.id===selected).rules.push([t,d]);closeModal();render();toast("规则已添加")}
+function removeRule(i){fields.find(x=>x.id===selected).rules.splice(i,1);render();toast("规则已删除")}
+function deleteField(){if(fields.length===1)return;fields=fields.filter(x=>x.id!==selected);selected=fields[0].id;render();toast("字段已删除")}
+function save(){toast("草稿已保存")}
+function publish(){
+ if(fields.some(f=>f.required&&f.rules.length===0)){alert("存在必填字段未配置校验规则，请补充后再发布");return}
+ document.getElementById("status").className="tag green";document.getElementById("status").textContent="已发布 V1.0";toast("模板已发布，规则引擎已生效")}
+function openPreview(){
+ let visible=fields.filter(f=>f.visible);
+ openModal("询价单预览",`<div class="preview-grid">${visible.map(f=>`<div class="fieldbox"><label>${f.name}${f.required?' *':''}</label>${f.type==="枚举"?'<select><option>请选择</option><option>整车</option><option>零担</option></select>':'<input placeholder="请输入'+f.name+'">'}</div>`).join("")}</div>`,`<button class="btn" onclick="closeModal()">关闭预览</button>`);
+}
+function openTest(){
+ openModal("规则测试",`<div style="font-size:13px;color:#475569;line-height:1.7">模拟一条报价数据，点击“执行校验”后，系统会按照当前字段规则进行检查。</div>
+ <div style="height:12px"></div><div class="grid2"><div><div class="label">运输方式</div><select class="select" id="tv"><option>整车</option><option>零担</option></select></div><div><div class="label">车型</div><input class="input" id="tc" placeholder="故意留空测试"></div></div>
+ <div style="height:12px"></div><div id="testResult"></div>`,
+ `<button class="btn" onclick="closeModal()">关闭</button><button class="btn primary" onclick="runTest()">执行校验</button>`);
+}
+function runTest(){let r=document.getElementById("testResult");let f=fields.find(x=>x.name==="车型");if(document.getElementById("tv").value==="整车"&&!document.getElementById("tc").value.trim()){r.innerHTML='<div class="error">✕ 校验失败：车型不能为空</div><div style="font-size:12px;color:#64748b;margin-top:5px">命中业务校验：运输方式为整车时，车型不能为空</div>'}else r.innerHTML='<div class="success">✓ 校验通过</div>'}
+function openModal(title,body,foot){document.getElementById("modal").innerHTML=`<div class="modal-head">${title}</div><div class="modal-body">${body}</div><div class="modal-foot">${foot}</div>`;document.getElementById("mask").style.display="flex"}
+function closeModal(){document.getElementById("mask").style.display="none"}
+function toast(t){let x=document.getElementById("toast");x.textContent=t;x.style.display="block";setTimeout(()=>x.style.display="none",1600)}
+document.getElementById("mask").onclick=e=>{if(e.target.id==="mask")closeModal()}
+render();
+</script>
+</body></html>
